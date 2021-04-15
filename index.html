@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="./assets/monster.svg"/>
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src='./app.js' defer></script>
+    <title>Mata Monstro</title>
+</head>
+<body>
+    <main id="app">
+        <div class="container">
+            <header>
+                <div class="logo">
+                    <img src="./assets/monster.svg" alt="">
+                    <h1>Mata Monstro</h1>
+                </div>
+            </header>
+            <div v-show='!tutorial && !getTreasure'>
+                <div class="screen-section health">
+                    <div class="player">
+                        <h2>Jogador</h2>
+                        <div class="health-bar">
+                            <div class='health-progress' :class='{"critical-health": critical.player}' :style='{"width": healthBarProgress.player}'></div>
+                        </div>
+                        <p>{{player.health}}%</p>
+                    </div>
+                    <div class="player">
+                        <h2>Monstro</h2>
+                        <div class="health-bar">
+                            <div class='health-progress' :class='{"critical-health": critical.monster}' :style='{"width": healthBarProgress.monster}'></div>
+                        </div>
+                        <p>{{monster.health}}%</p>
+                    </div>
+                </div>
+                <div class="screen-section" :class='{"defeat-screen": !win && end, "victory-screen": win && end, "draw-screen": draw && end}'>
+                    <template v-if='!playing'>
+                        <div class="start-game">
+                            <button @click='startGame' class='game-button blue-button'>Novo Jogo</button>
+                            <button @click='openTutorial' class='game-button yellow-button'>Como Jogar?</button>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div v-if='!win && !end' class="start-game">
+                            <button @click='attack' class='game-button red-button'>Ataque</button>
+                            <button @click='special' class='game-button' :class='{"pink-button": activeSpecial, "disable-button": !activeSpecial}'>Ataque Especial</button>
+                            <button @click='heal' class='game-button' :class='{"green-button": activeHeal, "disable-button": !activeHeal}'>Cura</button>
+                            <button @click='quitGame' class='game-button black-button'>Desistir</button>
+                        </div>
+                        <div v-else-if='!win && end && !draw'>
+                            <div class="start-game result">
+                                <div>
+                                    <p class='result-text'>Você perdeu!! =(</p>
+                                </div>
+                                <button @click='quitGame' class='game-button white-button'>Voltar</button>
+                            </div>
+                        </div>
+                        <div v-else-if='draw && end && !win'>
+                            <div class='star-game result'>
+                                <div>
+                                    <p class='result-text'>Empate!! :O</p>
+                                </div>
+                                <button @click='quitGame' class='game-button white-button'>Voltar</button>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <div class='star-game result'>
+                                <div>
+                                    <p class='result-text'>Você venceu!! =)</p>
+                                </div>
+                                <button @click='quitGame' class='game-button white-button'>Voltar</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <template v-if='!playing'>
+                    <div class="screen-section column">
+                    <h2>Tesouro</h2>
+                    <p v-if='!treasureOpened'>Vença 10 partidas para liberar!</p>
+                    <p v-else>Você liberou o tesouro!</p>
+                    <div class='svg-icon' style='margin: 5px 0;'>
+                        <img v-if='!treasureOpened' src="./assets/treasure.svg" alt="">
+                        <img v-else @click='openTreasure' src="./assets/treasure-opened.svg" alt="">
+                    </div>
+                    <p>{{wins}} / 10</p>
+                </div>
+                </template>
+                <template v-else>
+                    <div class=" column">
+                        <ul class='screen-section log-list ' style='max-height: 200px; overflow-y: scroll;' ref='logContainer'>
+                            <li v-for='(log, i) in logs'>
+                                <div  class='turn'>
+                                    <div>turno</div>
+                                    <div class="turn-value">{{turn.logs[i]}}</div>
+                                </div>
+                                <div class='log-list-item'>
+                                <div class="log-item">{{log.player}}</div>
+                                <div class="log-item">{{log.monster}}</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </template>
+            </div>
+            <template v-if='tutorial'>
+                <div class="screen-section column" style='display: block;'>
+                    <div class="tutorial-section">
+                        <h1>Como Jogar?</h1>
+                        <p>
+                            Mata Monstro é um jogo de batalha em turnos, o objetivo principal é
+                            <s>,como muito bem nomeado,</s> MATAR O MONSTRO!! Para isso, ao iniciar o jogo
+                            serão exibidas as ações disponíveis para realizar a luta.
+                        </p>
+                        <p>
+                            Na tela, a barra de vida do jogador e do monstro serão exibidas para indicar o
+                            progresso dessa grande batalha, cuide pra não deixar a sua vida acabar hein!
+                        </p>
+                    </div>
+                    <div class="tutorial-section">
+                        <h1>Ações</h1>
+                        <p>As ações são a alma do jogo, escolha sabiamente!</p>
+                        <p>
+                            E lembre-se... as ações recebem valores aleatórios dentro de um determinado intervalo
+                            e o <strong>monstro sempre usa o ataque</strong>.</p>
+                        <ul style='list-style: none;'>
+                            <li>
+                                <div class='tutorial-item'>
+                                    <h2 class='red-button'>Ataque</h2>
+                                    <div>
+                                        <p class='log-item'>Jogador ataca de <strong>1 a 13 </strong>de dano</p>
+                                        <p class='log-item'>Monstro ataca de <strong>1 a 15 </strong>de dano</p>
+                                        <span>Disponibilidade: <strong>Sempre</strong></span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class='tutorial-item'>
+                                    <h2 class='pink-button'>Ataque Especial</h2>
+                                    <div>
+                                        <p class='log-item'>Jogador ataca de <strong>1 a 18 </strong>de dano</p>
+                                        <p class='log-item'>Monstro ataca de <strong>1 a 15 </strong>de dano</p>
+                                        <span>Disponibilidade: <strong>A cada 3 turnos é ativado</strong></span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class='tutorial-item'>
+                                    <h2 class='green-button'>Cura</h2>
+                                    <div>
+                                        <p class='log-item'>Jogador se cura de <strong>1 a 15</strong> de vida</p>
+                                        <p class='log-item'>Monstro ataca de <strong>1 a 15</strong> de vida</p>
+                                        <span>Disponibilidade: <strong>50% de chance de ativar a cada turno</strong></span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class='tutorial-item'>
+                                    <h2 class='black-button'>Desistir</h2>
+                                    <div>
+                                        <p class='log-item'>Desiste do jogo</p>
+                                        <span>Disponibilidade: <strong>Sempre</strong></span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tutorial-section">
+                        <h1>Regras</h1>
+                        <p>Condições de vitória, derrota e empate.</p>
+                        <ul style='list-style: none;'>
+                            <li>
+                                <div class='tutorial-item'>
+                                    <h2 class='green-button'>Vitória</h2>
+                                    <div>
+                                        <p class='log-item'>Vida do jogador > 0</p>
+                                        <p class='log-item'>Vida do monstro <= 0</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class='tutorial-item'>
+                                    <h2 class='red-button'>Derrota</h2>
+                                    <div>
+                                        <p class='log-item'>Vida do jogador <= 0</p>
+                                        <p class='log-item'>Vida do monstro > 0</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class='tutorial-item'>
+                                    <h2 class='yellow-button'>Vitória</h2>
+                                    <div>
+                                        <p class='log-item'>Vida do jogador = 0</p>
+                                        <p class='log-item'>Vida do monstro = 0</p>
+                                        <span>
+                                            No último turno, se o dano causado em ambos for maior ou igual ao valor da vida restante
+                                            será considerado empate independente do dano causado.
+                                        </span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class='close-tutorial'>
+                        <h5 style='font-weight: 400; color:#999'>Bom jogo! =)</h6>
+                        <button class='game-button white-button' @click='closeTutorial'>Voltar</button>
+                    </div>
+                </div>
+            </template>
+            <template v-if='getTreasure'>
+                <div class='treasure'>
+                    <h1 class='treasure-title'>Parabéns!!</h1>
+                    <img src="./assets/clap.gif" alt="">
+                    <p class='treasure-text'>Você é incrivel!!!!!!!</p>
+                    <button @click='closeTreasure' class='game-button blue-button'>Voltar</button>
+                </div>
+            </template>
+        </div>
+    </main>
+</body>
+</html>
