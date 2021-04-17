@@ -234,6 +234,21 @@
     #app {
         margin: 20px 10px;
     }
+
+    .tutorial-item {
+        flex-direction: column;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgb(223, 223, 223);
+    }
+
+    .tutorial-item > div, h2 {
+        width: 100%;
+    }
+
+    .tutorial-item > h2 {
+        margin-right: 0  !important;
+        margin-bottom: 10px;
+    }
 }
 
 .blue-button {
@@ -325,7 +340,7 @@
     display: flex;
     align-items: center;
     margin: 50px 0px;
-    min-width: 400px;
+    min-width: 200px;
 }
 
 .tutorial-item > h2 {
