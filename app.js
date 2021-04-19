@@ -58,8 +58,8 @@ new Vue({
         },
 
         attack() {
-            const playerDamage = this.randomDamage(13, 1);
-            const monsterDamage = this.randomDamage(15, 1);
+            const playerDamage = this.randomDamage(3, 13);
+            const monsterDamage = this.randomDamage(3, 15);
 
             this.player.health - monsterDamage >= 0
                 ? (this.player.health -= monsterDamage)
@@ -78,8 +78,8 @@ new Vue({
         },
 
         heal() {
-            const playerHeal = this.randomDamage(15, 1);
-            const monsterDamage = this.randomDamage(15, 1);
+            const playerHeal = this.randomDamage(3, 15);
+            const monsterDamage = this.randomDamage(3, 15);
 
             this.player.health - monsterDamage >= 0
                 ? (this.player.health -= monsterDamage)
@@ -100,8 +100,8 @@ new Vue({
 
         special() {
             this.activeSpecial = false;
-            const playerDamage = this.randomDamage(18, 1);
-            const monsterDamage = this.randomDamage(15, 1);
+            const playerDamage = this.randomDamage(4, 18);
+            const monsterDamage = this.randomDamage(3, 15);
 
             this.player.health - monsterDamage >= 0
                 ? (this.player.health -= monsterDamage)
@@ -142,8 +142,8 @@ new Vue({
             });
         },
 
-        randomDamage(mult, add) {
-            return Math.floor(Math.random() * mult) + add;
+        randomDamage(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
         },
 
         forceScroll() {
